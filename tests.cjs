@@ -56,7 +56,34 @@ t('id regimen',h.includes('id="regimen"'));
 // NHI wording (115/10/22 rules: MN not listed; 9.20 is oncology)
 t('nhi no 9.20 listing claim',!h.includes('9.20 節列舉'));
 t('nhi states MN not listed',h.includes('MN 未列入給付規定'));
-t('version v1.6',h.includes('v1.6 · 9 CASES'));
+t('version label present',/v1\.\d+ · 9 CASES/.test(h));
+// v1.8: ATE estimate (KDIGO Fig 38 / Hofstra & Wetzels 2016)
+const near=(a,b,e)=>Math.abs(a-b)<e;
+// reproduce the official FHS gencardio_lipids.xls examples
+t('FHS female example 1.3095%',near(E.framingham({sex:'f',age:30,sbp:125,tc:180,hdl:45}),0.01309508819972538,1e-6));
+t('FHS male example 1.6541%',near(E.framingham({sex:'m',age:30,sbp:125,tc:180,hdl:45}),0.016541031859781286,1e-6));
+t('treated BP raises risk',E.framingham({sex:'m',age:55,sbp:140,tc:200,hdl:45,trt:true})>E.framingham({sex:'m',age:55,sbp:140,tc:200,hdl:45}));
+const A=o=>E.ate(Object.assign({sex:'m',age:58,sbp:138,tc:320,hdl:48,trt:false,smoke:false,dm:false,prev:false,alb:2.8,method:'bcg',egfr:80,prot:6},o));
+const a1=A({});t('rate conversion',near(a1.base,-Math.log(1-a1.p10)/10*1000,1e-9));
+t('NS multiplier 2.1',a1.ns&&near(a1.est,a1.base*2.1,1e-9));
+t('no NS when prot 2',!A({prot:2}).ns&&near(A({prot:2}).est,A({prot:2}).base,1e-9));
+t('NS via alb<2.5 & prot 3.2',A({alb:2.4,prot:3.2}).ns);
+t('BCP gate 3.0: alb 3.1 -> none',A({alb:3.1,method:'bcp'}).verdict==='none');
+t('BCG gate 3.2: alb 3.1 -> estimated',A({alb:3.1}).verdict!=='none');
+t('alb >=3.2 -> none',A({alb:3.3}).verdict==='none');
+t('alb <2.5 -> vte path',A({alb:2.3}).verdict==='vte');
+t('BCP vte <2.0',A({alb:1.9,method:'bcp'}).verdict==='vte'&&A({alb:2.2,method:'bcp'}).verdict!=='vte');
+t('high risk -> aspirin',A({smoke:true,dm:true,age:65}).verdict==='aspirin');
+t('young low risk -> no aspirin',A({sex:'f',age:32,sbp:112,tc:190,hdl:60,prot:2}).verdict==='no-aspirin');
+const b=A({sex:'f',age:45,sbp:118,tc:230,hdl:55,egfr:40});t('eGFR<45 upper x1.6',near(b.upper,b.est*1.6,1e-9));
+t('no upper when eGFR 60',A({egfr:60}).upper===null);
+t('prev ATE -> secondary, no number',A({prev:true}).secondary&&A({prev:true}).est===undefined);
+t('age clamp note',A({age:25}).notes.some(n=>/30–74/.test(n))&&near(A({age:25}).p10,A({age:30}).p10,1e-12));
+t('dm note no double count',A({dm:true}).notes.some(n=>/HR 3.0/.test(n)));
+t('missing prot note',A({prot:null}).notes.some(n=>/未填蛋白尿/.test(n)));
+t('error no alb',!!A({alb:null}).error);t('error no sex',!!A({sex:''}).error);t('error mmol chol',!!A({tc:5.2}).error);t('error sbp',!!A({sbp:300}).error);
+['ate-sex','ate-age','ate-sbp','ate-trt','ate-smoke','ate-dm','ate-tc','ate-hdl','ate-prev','ate-run','ate-out'].forEach(id=>t('id '+id,h.includes('id="'+id+'"')));
+t('disclaimer present',h.includes('不是經驗證的預測模型'));
 // teaching data
 const CASES=JSON.parse(h.match(/^const CASES=(\[.*\]);$/m)[1]);const EX=JSON.parse(h.match(/^const EXAMS=(\{.*\});$/m)[1]);
 t('9 cases',CASES.length===9);t('10+10 questions',EX.resident.length===10&&EX.attending.length===10);

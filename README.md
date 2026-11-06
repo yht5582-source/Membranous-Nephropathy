@@ -2,7 +2,7 @@
 
 **公開網站：** https://yht5582-source.github.io/Membranous-Nephropathy/
 
-**目前網站版本：v1.7（2026-11-06）**
+**目前網站版本：v1.8（2026-11-06）**
 
 本網站為膜性腎病變（Membranous Nephropathy, MN）的繁體中文互動式醫學教育及臨床決策輔助工具。
 
@@ -10,6 +10,7 @@
 
 - 診斷及原發性／相關病因鑑別，包括 anti-PLA2R、THSD7A 與腎切片判讀。
 - KDIGO 2021 風險分層（Figure 30，含 6 個月支持治療後蛋白尿下降條件）、血栓預防提示（Figure 38），可一鍵帶入治療選擇（Figure 31）。
+- 動脈血栓事件（ATE）風險估算（KDIGO Figure 38／Hofstra & Wetzels 2016）：Framingham general CVD 基線 × 腎病症候群 HR 2.1（Lee 2016），標示為近似估算、非經驗證模型。
 - **個人化處方導引**：依檢驗與病人條件（HBV、生育、懷孕、既往 cyclophosphamide 累積量、感染等）排序 KDIGO 2021 藥物組合（Fig 31／34／35），依體重計算劑量（Fig 32），提供減藥／停藥規則、治療前檢查（Fig 14）與追蹤時程，可列印。
 - 蛋白尿、血清白蛋白、腎功能及免疫學反應追蹤；依初始治療顯示 KDIGO Figure 33 的 6 個月 anti-PLA2R 處置，並提示 Figure 34（resistant vs relapse）與 Figure 35（次發性 FSGS）。
 - 台灣健保：依 115/10/22 版給付規定全文查核，MN 未列給付適應症（rituximab 8.2.7／9.20、cyclosporin 8.2.1、tacrolimus 8.2.2）；處方前仍須核對當期公告。
@@ -21,7 +22,7 @@
 
 GitHub Pages 的網站來源是 `main` 分支的 `/(root)` 資料夾。若網站仍顯示較舊版本，請查看儲存庫 **Actions → pages build and deployment**，確認最新提交是否完成部署，然後重新載入或使用無痕瀏覽視窗開啟網站。
 
-首頁頂端顯示 `v1.7 · 9 CASES`，即可辨識本次更新。
+首頁頂端顯示 `v1.8 · 9 CASES`，即可辨識本次更新。
 
 ## 測試
 
