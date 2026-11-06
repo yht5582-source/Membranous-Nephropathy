@@ -89,8 +89,11 @@ t('error: proteinuria 1000 (mg entered as g)',/除以 1000/.test(R({prot:1000}).
 t('ok: proteinuria 40',!R({prot:40,alb:2.0,months:7,drop:'no'}).error);
 t('error: albumin in g/L',/除以 10/.test(R({alb:25}).error||''));
 t('error: eGFR 250',!!R({egfr:250}).error);
-t('pending explanation in UI',h.includes('「帶入治療選擇」暫不可用'));
-t('disabled button styled',h.includes('button.action:disabled{opacity:.45'));
+t('pending explanation in UI',h.includes('因此無法帶入治療選擇'));
+t('to-therapy not disabled at load',!/id="to-therapy"[^>]*disabled/.test(h));
+t('to-therapy recomputes first',/\$\('to-therapy'\)\.onclick=\(\)=>\{\$\('assess'\)\.click\(\)/.test(h));
+t('protein unit selector',h.includes('id="protunit"')&&!h.includes("prot:val('protein')"));
+t('unit error points to selector',/蛋白尿單位/.test(R({prot:1000}).error||''));
 // teaching data
 const CASES=JSON.parse(h.match(/^const CASES=(\[.*\]);$/m)[1]);const EX=JSON.parse(h.match(/^const EXAMS=(\{.*\});$/m)[1]);
 t('9 cases',CASES.length===9);t('10+10 questions',EX.resident.length===10&&EX.attending.length===10);
