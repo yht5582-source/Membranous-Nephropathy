@@ -94,6 +94,15 @@ t('to-therapy not disabled at load',!/id="to-therapy"[^>]*disabled/.test(h));
 t('to-therapy recomputes first',/\$\('to-therapy'\)\.onclick=\(\)=>\{\$\('assess'\)\.click\(\)/.test(h));
 t('protein unit selector',h.includes('id="protunit"')&&!h.includes("prot:val('protein')"));
 t('unit error points to selector',/蛋白尿單位/.test(R({prot:1000}).error||''));
+// v1.9: two-level mind map
+const mm=h.slice(h.indexOf('<section class="panel" id="mindmap">'),h.indexOf('</section>',h.indexOf('<section class="panel" id="mindmap">')));
+t('mind map 8 branches',(mm.match(/class="mn-branch /g)||[]).length===8);
+t('mind map >=30 sub-nodes',(mm.match(/class="mn-sub"/g)||[]).length>=30);
+t('mind map >=100 items',(mm.match(/<li>/g)||[]).length>=100);
+['PP 3.1.1','Figure 29','selectivity index &gt;0.20','375 mg/m²','2.5 mg/kg/d','1.5 mg/kg/d','trough 3–8 ng/mL','125–225 ng/mL','ELISA &lt;2 RU/mL','次發性 FSGS','bortezomib','BCG 2.5 g/dL ≈ BCP 2.0 g/dL','&gt;20/1000 人年','8.2.7','9.20','8.2.1','8.2.2'].forEach(s=>t('mind map has '+s,mm.includes(s)));
+t('mind map stays in tab (no data-tab links)',!/data-tab=/.test(mm));
+t('mind map search box',mm.includes('id="mn-search"')&&h.includes("q.addEventListener('input',search)"));
+t('expand-all includes sub-nodes',h.includes("#mindmap .mn-branch,#mindmap .mn-sub"));
 // teaching data
 const CASES=JSON.parse(h.match(/^const CASES=(\[.*\]);$/m)[1]);const EX=JSON.parse(h.match(/^const EXAMS=(\{.*\});$/m)[1]);
 t('9 cases',CASES.length===9);t('10+10 questions',EX.resident.length===10&&EX.attending.length===10);
