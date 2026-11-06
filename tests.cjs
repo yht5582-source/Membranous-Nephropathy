@@ -67,4 +67,64 @@ t('case answers balanced',dist(CASES.map(c=>c.correct))<=1);t('resident balanced
 // UI wiring ids exist
 ['egfr','protein','albumin','pla','months','drop','albmethod','decline','severe','to-therapy','trisk','basep','newp','newalb','baseab','newab','time','kidney'].forEach(id=>t('id '+id,h.includes('id="'+id+'"')));
 t('no stale persistent id',!h.includes('id="persistent"'));
+// ---- plan(): KDIGO Fig 31/32/33/34/35 + Fig 14
+const P=o=>E.plan(Object.assign({egfr:90,prot:6,alb:2.8,pla:30,months:6,drop:'no',decline:'stable',severe:'no',method:'bcg',phase:'naive',prior:'rituximab',etiology:'primary',weight:70,hbv:'neg',fertility:'no',cycPrior:0,pregnant:'no',infection:'no',diabetes:'no',leukopenia:'no'},o));
+const ids=r=>r.options.map(o=>o.id);const top=r=>r.options[0].id;
+t('plan error passthrough',!!P({alb:0}).error);
+t('plan pending -> watch only',ids(P({months:2,drop:'unknown'})).join()==='watch');
+t('plan low -> watch only',ids(P({prot:2,alb:3.6})).join()==='watch');
+t('plan low: no IS pre-checks',!P({prot:2,alb:3.6}).pre.some(x=>/TMP-SMX/.test(x)));
+t('plan moderate: rtx, cni, watch',ids(P({})).sort().join()==='cni,rtx,watch');
+t('plan moderate top rtx',top(P({}))==='rtx');
+t('plan high normal eGFR top rtx',top(P({alb:2.2}))==='rtx');
+t('plan high has cyc + cnirtx',['cyc','cnirtx'].every(i=>ids(P({alb:2.2})).includes(i)));
+t('plan high low eGFR top cyc',top(P({egfr:45}))==='cyc');
+t('plan high falling top cyc',top(P({decline:'fall'}))==='cyc');
+t('plan high low eGFR cnirtx cautious',P({egfr:45}).options.find(o=>o.id==='cnirtx').rank===3);
+t('plan very top cyc',top(P({decline:'rapid'}))==='cyc');
+t('plan very stop alert',P({decline:'rapid'}).alerts.some(a=>a.k==='stop'));
+// Fig 32 doses
+const cyc=P({egfr:90,weight:80,decline:'rapid'}).options.find(o=>o.id==='cyc');
+t('cyc 80kg cyclical cum 18 g (KDIGO example)',cyc.cum===18);t('cyc 80kg continuous cum 21.6 g',cyc.cumC===21.6);
+t('cyc dose 200 mg/d at 80 kg',cyc.dose.some(d=>/200 mg\/d/.test(d)));
+const cycH=P({egfr:40,weight:80,decline:'rapid'}).options.find(o=>o.id==='cyc');
+t('cyc halved eGFR<50',cycH.cum===9&&cycH.dose.some(d=>/100 mg\/d/.test(d)));
+t('cyc no weight -> mg/kg only',P({weight:null,decline:'rapid'}).options.find(o=>o.id==='cyc').cum===null);
+const tac=P({weight:60}).options.find(o=>o.id==='cni');
+t('tac 60 kg 3-6 mg/d',tac.dose.some(d=>/約 3–6 mg\/d/.test(d)));t('csa 60 kg 210 mg/d',tac.dose.some(d=>/約 210 mg\/d/.test(d)));
+t('tac trough 3-8',tac.dose.some(d=>/3–8 ng\/mL/.test(d)));t('csa trough 125-225',tac.dose.some(d=>/125–225/.test(d)));
+t('cni 4-month withdrawal rule',tac.taper.some(d=>/第 4 個月無反應/.test(d)));
+t('rtx 1 g x2',P({}).options.find(o=>o.id==='rtx').dose[0].includes('1 g IV'));
+// cumulative caps
+t('fertility 80kg cyc 18 g >10 -> avoid',P({weight:80,fertility:'yes',decline:'rapid'}).options.find(o=>o.id==='cyc').rank===9);
+t('fertility excluded cyc promotes rtx',top(P({weight:80,fertility:'yes',decline:'rapid'}))==='rtx');
+t('prior 20 g + 18 g >36 -> avoid',P({weight:80,cycPrior:20,decline:'rapid'}).options.find(o=>o.id==='cyc').rank===9);
+t('prior 10 g + 18 g >25 caution',P({weight:80,cycPrior:10,decline:'rapid'}).options.find(o=>o.id==='cyc').cautions.some(c=>/25 g/.test(c)));
+t('fertility small dose allowed',P({weight:40,fertility:'yes',decline:'rapid'}).options.find(o=>o.id==='cyc').rank===1);
+t('pregnant cyc avoid',P({pregnant:'yes',decline:'rapid'}).options.find(o=>o.id==='cyc').rank===9);
+t('last rank 9 sorted last',(r=>r.options[r.options.length-1].rank===9)(P({pregnant:'yes',egfr:45})));
+// safety alerts
+t('HBsAg+ warn',P({hbv:'chronic'}).alerts.some(a=>/entecavir/.test(a.t)));
+t('anti-HBc+ rtx caution',P({hbv:'past'}).options.find(o=>o.id==='rtx').cautions.length>0);
+t('HBV unknown warn',P({hbv:'unknown'}).alerts.some(a=>/HBV 篩檢/.test(a.t)));
+t('infection stop',P({infection:'yes'}).alerts.some(a=>a.k==='stop'));
+t('secondary -> watch only + stop',ids(P({etiology:'secondary',alb:2.2})).join()==='watch'&&P({etiology:'secondary'}).alerts[0].k==='stop');
+t('diabetes cni caution',P({diabetes:'yes'}).options.find(o=>o.id==='cni').cautions.some(c=>/cyclosporine/.test(c)));
+// Fig 34 relapse
+t('relapse after rtx -> rtx',ids(P({phase:'relapse',prior:'rituximab'})).join()==='rtx');
+t('relapse after cni -> rtx first',top(P({phase:'relapse',prior:'cni'}))==='rtx'&&ids(P({phase:'relapse',prior:'cni'})).includes('cnirtx'));
+t('relapse after cyc -> rtx, cyc, cnirtx',ids(P({phase:'relapse',prior:'cyc'})).sort().join()==='cnirtx,cyc,rtx');
+// Fig 35 resistant
+t('resistant rtx stable -> cnirtx first',top(P({phase:'resistant',prior:'rituximab'}))==='cnirtx');
+t('resistant rtx falling -> cyc',top(P({phase:'resistant',prior:'rituximab',decline:'fall'}))==='cyc');
+t('resistant cni stable -> rtx',top(P({phase:'resistant',prior:'cni'}))==='rtx');
+t('resistant cyc stable -> rtx',top(P({phase:'resistant',prior:'cyc'}))==='rtx');
+t('resistant both -> expert',top(P({phase:'resistant',prior:'both'}))==='expert');
+// Fig 14 / follow-up
+const pm=P({});t('pre has PJP',pm.pre.some(x=>/TMP-SMX/.test(x)));t('pre has Shingrix',pm.pre.some(x=>/Shingrix/.test(x)));t('pre has TB',pm.pre.some(x=>/結核/.test(x)));
+t('follow-up 6 month PLA2R step',pm.followup.some(f=>f[0]==='第 6 個月'&&/Fig 33/.test(f[1])));
+t('supportive thrombo when alb low',P({alb:2.2}).supportive.some(x=>/預防性抗凝/.test(x)));
+t('every option has dose/taper/monitor',[P({}),P({decline:'rapid'}),P({phase:'resistant',prior:'both'})].every(r=>r.options.every(o=>o.dose.length&&o.taper.length&&o.monitor.length&&o.rankText)));
+['plan','p-run','p-print','p-import','p-phase','p-prior','p-weight','p-hbv','p-cycprior','planout'].forEach(id=>t('plan id '+id,h.includes('id="'+id+'"')));
+t('plan tab button',h.includes('data-tab="plan"'));
 console.log(`${pass} passed, ${fail} failed`);process.exit(fail?1:0);
