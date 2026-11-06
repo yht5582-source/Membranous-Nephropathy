@@ -2,7 +2,7 @@
 
 **公開網站：** https://yht5582-source.github.io/Membranous-Nephropathy/
 
-**目前網站版本：v1.8（2026-11-06）**
+**目前網站版本：v1.8.1（2026-11-06）**
 
 本網站為膜性腎病變（Membranous Nephropathy, MN）的繁體中文互動式醫學教育及臨床決策輔助工具。
 
@@ -22,7 +22,7 @@
 
 GitHub Pages 的網站來源是 `main` 分支的 `/(root)` 資料夾。若網站仍顯示較舊版本，請查看儲存庫 **Actions → pages build and deployment**，確認最新提交是否完成部署，然後重新載入或使用無痕瀏覽視窗開啟網站。
 
-首頁頂端顯示 `v1.8 · 9 CASES`，即可辨識本次更新。
+首頁頂端顯示 `v1.8.1 · 9 CASES`，即可辨識本次更新。
 
 ## 測試
 

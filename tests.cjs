@@ -56,7 +56,7 @@ t('id regimen',h.includes('id="regimen"'));
 // NHI wording (115/10/22 rules: MN not listed; 9.20 is oncology)
 t('nhi no 9.20 listing claim',!h.includes('9.20 節列舉'));
 t('nhi states MN not listed',h.includes('MN 未列入給付規定'));
-t('version label present',/v1\.\d+ · 9 CASES/.test(h));
+t('version label present',/v1(\.\d+)+ · 9 CASES/.test(h));
 // v1.8: ATE estimate (KDIGO Fig 38 / Hofstra & Wetzels 2016)
 const near=(a,b,e)=>Math.abs(a-b)<e;
 // reproduce the official FHS gencardio_lipids.xls examples
@@ -84,6 +84,13 @@ t('missing prot note',A({prot:null}).notes.some(n=>/未填蛋白尿/.test(n)));
 t('error no alb',!!A({alb:null}).error);t('error no sex',!!A({sex:''}).error);t('error mmol chol',!!A({tc:5.2}).error);t('error sbp',!!A({sbp:300}).error);
 ['ate-sex','ate-age','ate-sbp','ate-trt','ate-smoke','ate-dm','ate-tc','ate-hdl','ate-prev','ate-run','ate-out'].forEach(id=>t('id '+id,h.includes('id="'+id+'"')));
 t('disclaimer present',h.includes('不是經驗證的預測模型'));
+// v1.8.1: unit plausibility + observation-state button
+t('error: proteinuria 1000 (mg entered as g)',/除以 1000/.test(R({prot:1000}).error||''));
+t('ok: proteinuria 40',!R({prot:40,alb:2.0,months:7,drop:'no'}).error);
+t('error: albumin in g/L',/除以 10/.test(R({alb:25}).error||''));
+t('error: eGFR 250',!!R({egfr:250}).error);
+t('pending explanation in UI',h.includes('「帶入治療選擇」暫不可用'));
+t('disabled button styled',h.includes('button.action:disabled{opacity:.45'));
 // teaching data
 const CASES=JSON.parse(h.match(/^const CASES=(\[.*\]);$/m)[1]);const EX=JSON.parse(h.match(/^const EXAMS=(\{.*\});$/m)[1]);
 t('9 cases',CASES.length===9);t('10+10 questions',EX.resident.length===10&&EX.attending.length===10);
