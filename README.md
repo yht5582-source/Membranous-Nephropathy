@@ -2,14 +2,14 @@
 
 **公開網站：** https://yht5582-source.github.io/Membranous-Nephropathy/
 
-**目前網站版本：v1.4（2026-11-06）**
+**目前網站版本：v1.5（2026-11-06）**
 
 本網站為膜性腎病變（Membranous Nephropathy, MN）的繁體中文互動式醫學教育及臨床決策輔助工具。
 
 ## 功能
 
 - 診斷及原發性／相關病因鑑別，包括 anti-PLA2R、THSD7A 與腎切片判讀。
-- KDIGO 風險分層與治療方案討論。
+- KDIGO 2021 風險分層（Figure 30，含 6 個月支持治療後蛋白尿下降條件）、血栓預防提示（Figure 38），可一鍵帶入治療選擇（Figure 31）。
 - 蛋白尿、血清白蛋白、腎功能及免疫學反應追蹤。
 - 台灣健保給付條件查核提醒（須以健保署公告為準）。
 - **9 例互動臨床模擬病例**，附作答與詳細解說。
@@ -20,7 +20,11 @@
 
 GitHub Pages 的網站來源是 `main` 分支的 `/(root)` 資料夾。若網站仍顯示較舊版本，請查看儲存庫 **Actions → pages build and deployment**，確認最新提交是否完成部署，然後重新載入或使用無痕瀏覽視窗開啟網站。
 
-首頁頂端顯示 `v1.4 · 9 CASES`，即可辨識本次更新。
+首頁頂端顯示 `v1.5 · 9 CASES`，即可辨識本次更新。
+
+## 測試
+
+決策邏輯集中於 `index.html` 的 `/*ENGINE-START*/ … /*ENGINE-END*/`（`MNE`），執行 `node tests.cjs` 檢查。頁籤可用網址直接開啟，例如 `#risk`、`#cases`、`#quiz`、`#map`。
 
 ## 臨床使用聲明
 
