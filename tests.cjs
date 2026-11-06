@@ -36,6 +36,27 @@ t('immuno remission <2',S({baseAb:180,nowAb:1}).immuno.remission);
 t('immuno rising text',S({baseAb:20,nowAb:60}).immuno.rising&&/上升/.test(S({baseAb:20,nowAb:60}).immuno.text));
 t('immuno base 0',/無法計算/.test(S({baseAb:0,nowAb:0}).immuno.text));
 t('response error',!!S({base:0}).error);
+// v1.6: KDIGO Figure 33/34/35
+t('fig33 none without nowAb',S({}).fig33===null);
+t('fig33 rtx absent',/不需追加/.test(S({baseAb:180,nowAb:1,regimen:'rituximab',months:6}).fig33.text));
+t('fig33 rtx low',S({baseAb:180,nowAb:30,regimen:'rituximab',months:6}).fig33.state==='low');
+t('fig33 not low if not decreased',S({baseAb:20,nowAb:30,regimen:'rituximab'}).fig33.state==='present');
+t('fig33 cyc present adds rtx',/改加 rituximab/.test(S({baseAb:180,nowAb:120,regimen:'cyc',months:6}).fig33.text));
+t('fig33 cni low continue',/續用 6 個月/.test(S({baseAb:100,nowAb:40,regimen:'cni',months:6}).fig33.text));
+t('fig33 <6 mo conditional',/尚未滿 6 個月/.test(S({baseAb:100,nowAb:40,regimen:'cni',months:3}).fig33.text));
+t('fig33 no regimen prompt',/選擇初始治療/.test(S({baseAb:100,nowAb:40}).fig33.text));
+t('fig33 boundary 2 is not absent',S({baseAb:100,nowAb:2}).fig33.state==='low');
+t('fig34 resistant note',S({now:3,alb:2.8}).notes.some(n=>/Figure 34/.test(n)));
+t('fig34 no note when alb normal',S({now:3,alb:3.8}).notes.length===0);
+t('fig34 no note when prot <2',S({now:1.5,alb:2.8}).notes.length===0);
+t('fig35 FSGS note',S({now:5,alb:3.4,baseAb:100,nowAb:1}).notes.some(n=>/Figure 35/.test(n)));
+t('PR text alb normal',/白蛋白已正常化/.test(S({alb:3.8}).clinical));
+t('no unverified 3-week claim',!h.includes('≥3 週'));
+t('id regimen',h.includes('id="regimen"'));
+// NHI wording (115/10/22 rules: MN not listed; 9.20 is oncology)
+t('nhi no 9.20 listing claim',!h.includes('9.20 節列舉'));
+t('nhi states MN not listed',h.includes('MN 未列入給付規定'));
+t('version v1.6',h.includes('v1.6 · 9 CASES'));
 // teaching data
 const CASES=JSON.parse(h.match(/^const CASES=(\[.*\]);$/m)[1]);const EX=JSON.parse(h.match(/^const EXAMS=(\{.*\});$/m)[1]);
 t('9 cases',CASES.length===9);t('10+10 questions',EX.resident.length===10&&EX.attending.length===10);
